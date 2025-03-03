@@ -1,7 +1,11 @@
+lightning==2.5.0.post0
 torch==2.2.2
-segmentation_models_pytorch==0.4.1.dev0
+git+https://github.com/qubvel/segmentation_models.pytorch
 albumentations==2.0.3
 matplotlib==3.9.2
 opencv-contrib-python==4.9.0.80
-numpy==2.0.2
+numpy==1.26.0
 tqdm~=4.66.4
+onnx==1.17.0
+tensorboard==2.19.0
+pyyaml==6.0.2

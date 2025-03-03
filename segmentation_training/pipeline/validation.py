@@ -5,7 +5,7 @@ import torch
 from slicing_utils.tiles import ImageSlicer
 from pipeline.inference import sliced_inference
 from tqdm import tqdm
-from utils.read import read_mask_png, read_rgb
+from utils.read import read_raster
 from utils.viz import plot_images
 
 
@@ -23,8 +23,8 @@ def validate_model(
 
     Parameters:
         model (torch.nn.Module): The PyTorch segmentation model.
-        image_paths (list[Path | str]): List of image file paths.
-        label_path (Path): Path to the directory containing ground truth masks.
+        image_paths (list[Path]): List of image file paths.
+        label_paths (list[Path]): List of ground truth mask paths.
         tile_size (tuple[int, int]): Tile size (h x w) for sliding window inference.
         tile_step (tuple[int, int]): Tile step (h x w) for sliding window inference.
         conf (float): Confidence threshold for generating binary masks.
@@ -42,7 +42,7 @@ def validate_model(
     for image_path, label_path in tqdm(
         zip(image_paths, label_paths, strict=True), total=len(image_paths), desc="Sliced validation"
     ):
-        image = read_rgb(image_path.as_posix())
+        image = read_raster(image_path.as_posix())
 
         slicer = ImageSlicer(
             image_shape=image.shape[:2],
@@ -55,17 +55,11 @@ def validate_model(
         pred_mask = (pred_mask > 0).astype(np.uint8)  # Ensure binary format
 
         # Get corresponding label masks
-        label_masks = list(label_path.glob("*.png"))
-
-        # Merge label masks into a single binary mask
-        gt_mask = np.zeros_like(pred_mask, dtype=bool)
-        for mask_path in label_masks:
-            mask = (read_mask_png(mask_path.as_posix()) > 0).astype(np.uint8)  # Threshold at 0
-            gt_mask = np.logical_or(gt_mask, mask)
+        gt_mask = read_raster(label_path.as_posix(), band=3) # boundary mask is in the 3rd band
 
         if viz_dir is not None:
             save_path = viz_dir / f"{image_path.stem}_pred_gt.png"
-            plot_images([image, pred_mask, gt_mask], title="Image vs prediction vs GT", save_path=save_path)
+            plot_images([image[:, :, :3], pred_mask, gt_mask], title="Image vs prediction vs GT", save_path=save_path)
 
         cur_tp = int(np.sum((pred_mask == 1) & (gt_mask == 1)))
         cur_fp = int(np.sum((pred_mask == 1) & (gt_mask == 0)))

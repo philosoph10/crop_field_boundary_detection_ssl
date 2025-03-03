@@ -1,0 +1,12 @@
+train_path: "/data/satellite_imagery/planet/kharkiv_2016/sliced_dataset_256x256/images/train"
+validation_path: "/data/satellite_imagery/planet/kharkiv_2016/sliced_dataset_256x256/images/val"
+results_path: "/data/satellite_imagery/planet/kharkiv_2016/sliced_dataset_256x256/experiments/unet_resnet18_300epochs"
+
+epochs: 300
+image_size: [256, 256]
+batch_size: 64
+architecture: "Unet"
+encoder: "resnet18"
+lr: 0.0001
+device: "auto"
+validation_metric: "f1_score"

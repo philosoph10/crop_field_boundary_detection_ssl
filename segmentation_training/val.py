@@ -20,7 +20,7 @@ def get_args():
     # Required arguments
     parser.add_argument("--images_path", type=str, required=True, help="Path to the folder with images (required).")
     parser.add_argument("--labels_path", type=str, required=True, help="Path to the folder with labels (required).")
-    parser.add_argument("--model_path", type=str, required=True, help="Path to the traced model (required).")
+    parser.add_argument("--model_path", type=str, required=True, help="Path to the jit traced model (required).")
     parser.add_argument(
         "--results_path",
         type=str,
@@ -67,11 +67,8 @@ def main(args):
     if metrics_path.exists():
         raise ValueError(f"Metrics path {metrics_path.as_posix()} already exist! Please choose a different folder.")
 
-    images_list = list(Path(args.images_path).glob("*.jpg"))
-    labels_list = []
-    for image_path in images_list:
-        label_dir = list(Path(args.labels_path).glob(image_path.stem))[0]
-        labels_list.append(label_dir)
+    images_list = sorted(Path(args.images_path).glob("*.tif"))
+    labels_list = sorted(Path(args.labels_path).glob("*.tif"))
 
     model = torch.jit.load(args.model_path)
 
